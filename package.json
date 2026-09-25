@@ -1,0 +1,19 @@
+{
+  "name": "cohort8-capstone-project-backend",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "cloudinary": "^2.11.0",
+    "dotenv": "^18.0.4",
+    "express": "^5.2.1",
+    "mongoose": "^9.10.2",
+    "multer": "^2.4.0"
+  }
+}
