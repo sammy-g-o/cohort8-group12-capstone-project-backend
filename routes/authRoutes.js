@@ -33,7 +33,13 @@ router.post("/signup", async (req, res) => {
     res.status(201).json({
       status: "successful",
       data: {
-        user,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          timestamp: user.timestamp,
+        },
       },
     });
   } catch (error) {
