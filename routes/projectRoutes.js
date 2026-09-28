@@ -1,9 +1,8 @@
-import express from 'express';
-import projectsModel from '../models/projectsModel';
+import express from "express";
+import { taskRouter } from "./taskRoutes.js";
 
-const projectRoute = express.Router();
-projectRoute.post('/projects', createProjects);
-projectRoute.get('/projects', getProjects);
-projectRoute.get('/projects/:id', getProjectsById);
+export const projectRoute = express.Router({ mergeParams: true });
+projectRoute.route("/").post(createProject).get(getProjects);
+projectRoute.route("/:id").get(getProjectsById);
 
-export default projectRoute;
+projectRoute.use("/:id/tasks", taskRouter, {});
