@@ -6,11 +6,11 @@ const router = express.Router();
 
 router.post("/signup", async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
 
-    if (!name || !email || !password || !role) {
+    if (!name || !email || !password) {
       return res.status(400).json({
-        message: "Name, email, password and role are required",
+        message: "Name, email and password are required",
       });
     }
 
@@ -28,17 +28,12 @@ router.post("/signup", async (req, res) => {
       name,
       email,
       passwordHash,
-      role,
     });
 
     res.status(201).json({
-      message: "User registered successfully",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        timestamp: user.timestamp,
+      status: "successful",
+      data: {
+        user,
       },
     });
   } catch (error) {
@@ -67,10 +62,7 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    const isPasswordCorrect = await bcrypt.compare(
-      password,
-      user.passwordHash
-    );
+    const isPasswordCorrect = await bcrypt.compare(password, user.passwordHash);
 
     if (!isPasswordCorrect) {
       return res.status(401).json({
