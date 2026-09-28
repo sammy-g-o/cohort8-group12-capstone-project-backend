@@ -11,7 +11,7 @@ const DB = process.env.ATLAS_STRING.replace(
 mongoose
   .connect(DB)
   .then(() => console.log(`Database connected successfully`))
-  .catch((err) => console.log("connection error"));
+  .catch((err) => console.log("db connection error"));
 
 const PORT = 3000;
 
