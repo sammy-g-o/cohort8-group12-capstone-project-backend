@@ -8,7 +8,10 @@ const DB = process.env.ATLAS_STRING.replace(
   process.env.MONGODB_PASSWORD,
 );
 
-mongoose.connect(DB).then(() => console.log(`Database connected successfully`));
+mongoose
+  .connect(DB)
+  .then(() => console.log(`Database connected successfully`))
+  .catch((err) => console.log("db connection error"));
 
 const PORT = 3000;
 
