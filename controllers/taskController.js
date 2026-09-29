@@ -24,6 +24,7 @@ export const getAllTasks = async (req, res) => {
 
     res.status(201).json({
       status: "successfully",
+      result: tasks.length,
       data: tasks.length === 0 ? "no task" : { tasks },
     });
   } catch (error) {
