@@ -1,8 +1,13 @@
 import express from "express";
 import { taskRouter } from "./taskRoutes.js";
+import {
+  createProject,
+  getProjects,
+  getProjectsById,
+} from "../controllers/projectController.js";
 
 export const projectRoute = express.Router();
-projectRoute.route("/").post(()=>console.log('created project')).get(()=>console.log('retrieved projects'));
-projectRoute.route("/:id").get(()=>console.log('retrieved project'));
+projectRoute.route("/").post(createProject).get(getProjects);
+projectRoute.route("/:id").get(getProjectsById);
 
 projectRoute.use("/:projectId/tasks", taskRouter);
