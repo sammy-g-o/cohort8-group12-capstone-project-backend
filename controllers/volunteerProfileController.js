@@ -84,6 +84,13 @@ export const updateVolunteerProfile = async (req, res) => {
       { returnDocument: "after", runValidators: true },
     );
 
+    if (!updatedProfile) {
+      return res.status(404).json({
+        status: "failed",
+        message: "profile not found",
+      });
+    }
+
     res.status(200).json({
       status: "successful",
       message: "successfully updated profile",
@@ -101,6 +108,12 @@ export const deleteVolunteerProfile = async (req, res) => {
     const deletedVolunteerProfile = await VolunteerProfile.findByIdAndDelete(
       req.params.id,
     );
+    if (!deletedVolunteerProfile) {
+      return res.status(404).json({
+        status: "failed",
+        message: "Profile not found",
+      });
+    }
     res.status(204).json({
       status: "successfull",
     });
