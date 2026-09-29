@@ -12,7 +12,8 @@ export const createProject = async (req, res) => {
     });
   } catch (error) {
     res.status(400).json({
-      message: "Failed to create project",
+      status: 'Failed',
+      message: error.message,
     });
   }
 };
