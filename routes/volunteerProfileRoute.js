@@ -20,6 +20,6 @@ volunteerRoute
   );
 volunteerRoute
   .route("/:id")
-  .patch(updateVolunteerProfile)
+  .patch(authenticate, updateVolunteerProfile)
   .get(authenticate, getVolunteerProfile)
-  .delete(deleteVolunteerProfile);
+  .delete(authenticate, deleteVolunteerProfile);
