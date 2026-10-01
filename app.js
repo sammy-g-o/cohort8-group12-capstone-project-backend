@@ -13,3 +13,9 @@ app.use("/auth", authRouter);
 app.use("/projects", projectRoute);
 app.use("/volunteers", volunteerRoute);
 
+app.all("*", (req, res, next) => {
+  res.status(404).json({
+    status: "failed",
+    message: `can't find ${req.originalUrl} on this server`,
+  });
+});
