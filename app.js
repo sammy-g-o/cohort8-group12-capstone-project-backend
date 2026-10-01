@@ -3,9 +3,11 @@ import morgan from "morgan";
 import authRouter from "./routes/authRoutes.js";
 import { projectRoute } from "./routes/projectRoutes.js";
 import { volunteerRoute } from "./routes/volunteerProfileRoute.js";
+import cors from "cors";
 
 export const app = express();
 
+app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 
