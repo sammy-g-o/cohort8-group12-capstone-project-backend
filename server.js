@@ -7,7 +7,8 @@ const DB = process.env.ATLAS_STRING.replace(
   "<db_password>",
   process.env.MONGODB_PASSWORD,
 );
-const LOCAL = process.env.LOCAL
+const LOCAL = process.env.LOCAL_DB
+
 mongoose
   .connect(LOCAL)
   .then(() => console.log(`Database connected successfully`))
