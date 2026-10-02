@@ -7,13 +7,17 @@ import {
   getProjectsById,
   updateProject,
 } from "../controllers/projectController.js";
+import { authenticate, authorize } from "../middleware/authMiddleware.js";
 
 export const projectRoute = express.Router();
-projectRoute.route("/").post(createProject).get(getProjects);
+projectRoute
+  .route("/")
+  .post(authenticate, authorize("coordinator"), createProject)
+  .get(authenticate, getProjects);
 projectRoute
   .route("/:id")
-  .get(getProjectsById)
-  .patch(updateProject)
-  .delete(deleteProject);
+  .get(authenticate, getProjectsById)
+  .patch(authenticate, authorize("coordinator"), updateProject)
+  .delete(authenticate, authorize("coordinator"), deleteProject);
 
 projectRoute.use("/:projectId/tasks", taskRouter);
