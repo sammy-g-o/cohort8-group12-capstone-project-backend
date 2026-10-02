@@ -1,6 +1,21 @@
 import User from "../models/userModel.js";
 import VolunteerProfile from "../models/volunteerProfileModel.js";
 
+export const getMyVolunteerProfile = async (req, res) => {
+  try {
+    const myProfile = await VolunteerProfile.find(req.user.email);
+    res.status(200).json({
+      status: "successfull",
+      data: { myProfile },
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "failed",
+      message: error.message,
+    });
+  }
+};
+
 export const createVolunteerProfile = async (req, res) => {
   try {
     const { userId } = req.body;
