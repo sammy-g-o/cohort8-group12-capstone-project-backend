@@ -20,7 +20,7 @@ export const createTask = async (req, res) => {
 };
 export const getAllTasks = async (req, res) => {
   try {
-    const tasks = await Task.find(req.params.projectId);
+    const tasks = await Task.find({ projectId: req.params.projectId });
 
     res.status(200).json({
       status: "successfully",

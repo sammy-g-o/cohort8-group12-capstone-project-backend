@@ -53,7 +53,7 @@ export const signup = async (req, res) => {
           name: user.name,
           email: user.email,
           role: user.role,
-          timestamp: user.timestamp,
+          timestamp: user.createdAt,
         },
       },
     });

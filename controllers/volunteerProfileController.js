@@ -39,7 +39,7 @@ export const createVolunteerProfile = async (req, res) => {
         message: "User is not a volunteer",
       });
     }
-    const existing = await VolunteerProfile.findOne({ userId });
+    const existing = await VolunteerProfile.findOne({ userId: req.user.id });
     if (existing) {
       return res.status(409).json({
         status: "failed",
@@ -47,7 +47,10 @@ export const createVolunteerProfile = async (req, res) => {
       });
     }
 
-    const newProfile = await VolunteerProfile.create(req.body);
+    const newProfile = await VolunteerProfile.create({
+      ...req.body,
+      userId: req.user.id,
+    });
 
     res.status(201).json({
       status: "successful",
