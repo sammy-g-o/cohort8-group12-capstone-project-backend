@@ -13,9 +13,9 @@ export const taskRouter = express.Router({ mergeParams: true });
 taskRouter
   .route("/")
   .post(authenticate, authorize("coordinator"), createTask)
-  .get(getAllTasks);
+  .get(authenticate, authorize("coordinator"), getAllTasks);
 taskRouter
   .route("/:id")
-  .patch(authenticate, updateTask)
+  .patch(authenticate, authorize("coordinator"), updateTask)
   .get(authenticate, getTask)
-  .delete(deleteTask);
+  .delete(authenticate, authorize("coordinator"), deleteTask);
