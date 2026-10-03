@@ -20,9 +20,9 @@ export const createTask = async (req, res) => {
 };
 export const getAllTasks = async (req, res) => {
   try {
-    const tasks = await Task.find();
+    const tasks = await Task.find(req.params.projectId);
 
-    res.status(201).json({
+    res.status(200).json({
       status: "successfully",
       result: tasks.length,
       data: tasks.length === 0 ? "no task" : { tasks },

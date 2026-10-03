@@ -16,6 +16,6 @@ taskRouter
   .get(authenticate, authorize("coordinator"), getAllTasks);
 taskRouter
   .route("/:id")
-  .patch(authenticate, authorize("coordinator"), updateTask)
+  .patch(authenticate, authorize("coordinator", "volunteer"), updateTask)
   .get(authenticate, getTask)
   .delete(authenticate, authorize("coordinator"), deleteTask);

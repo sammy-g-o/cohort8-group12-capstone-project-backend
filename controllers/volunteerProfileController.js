@@ -3,7 +3,7 @@ import VolunteerProfile from "../models/volunteerProfileModel.js";
 
 export const getMyVolunteerProfile = async (req, res) => {
   try {
-    const myProfile = await VolunteerProfile.find({ userId: req.user.id });
+    const myProfile = await VolunteerProfile.findOne({ userId: req.user.id });
     if (!myProfile) {
       return res.status(404).json({
         status: "failed",
@@ -24,9 +24,9 @@ export const getMyVolunteerProfile = async (req, res) => {
 
 export const createVolunteerProfile = async (req, res) => {
   try {
-    const { userId } = req.body;
+    // const { userId } = req.body;
 
-    const user = await User.findById(userId);
+    const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({
         status: "failed",
@@ -135,7 +135,7 @@ export const deleteVolunteerProfile = async (req, res) => {
         message: "Profile not found",
       });
     }
-    res.status(204).send("successful")
+    res.status(204).send("successful");
   } catch (error) {
     res.status(500).json({
       status: "failed",

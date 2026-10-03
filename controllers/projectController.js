@@ -3,7 +3,10 @@ import projectsModel from "../models/projectsModel.js";
 //Create a project
 export const createProject = async (req, res) => {
   try {
-    const project = await projectsModel.create(req.body);
+    const project = await projectsModel.create({
+      ...req.body,
+      createdBy: req.user.id,
+    });
 
     res.status(201).json({
       status: "successful",
@@ -12,7 +15,7 @@ export const createProject = async (req, res) => {
     });
   } catch (error) {
     res.status(400).json({
-      status: 'Failed',
+      status: "Failed",
       message: error.message,
     });
   }
