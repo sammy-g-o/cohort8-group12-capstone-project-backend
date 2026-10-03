@@ -10,7 +10,7 @@ const signToken = (id, role) => {
 
 export const signup = async (req, res) => {
   try {
-    const { name, email, password, phoneNumber } = req.body;
+    const { name, email, password, phoneNumber, role } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -26,13 +26,23 @@ export const signup = async (req, res) => {
       });
     }
 
+    // ...existing required-field and duplicate-email checks...
+
+    const allowedSignupRoles = ["volunteer", "coordinator"];
+    if (role && !allowedSignupRoles.includes(role)) {
+      return res.status(403).json({
+        message: "You can't register with that role",
+      });
+    }
+
     const passwordHash = await bcrypt.hash(password, 12);
 
     const user = await User.create({
       name,
       email,
-      passwordHash,
       phoneNumber,
+      role, // undefined falls back to the schema default ("volunteer")
+      passwordHash,
     });
 
     res.status(201).json({
