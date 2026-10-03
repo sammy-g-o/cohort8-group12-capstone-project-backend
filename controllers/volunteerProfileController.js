@@ -3,7 +3,13 @@ import VolunteerProfile from "../models/volunteerProfileModel.js";
 
 export const getMyVolunteerProfile = async (req, res) => {
   try {
-    const myProfile = await VolunteerProfile.find(req.user.email);
+    const myProfile = await VolunteerProfile.find({ userId: req.user.id });
+    if (!myProfile) {
+      return res.status(404).json({
+        status: "failed",
+        message: "You haven't created a volunteer profile yet",
+      });
+    }
     res.status(200).json({
       status: "successfull",
       data: { myProfile },
@@ -129,9 +135,7 @@ export const deleteVolunteerProfile = async (req, res) => {
         message: "Profile not found",
       });
     }
-    res.status(204).json({
-      status: "successfull",
-    });
+    res.status(204).send("successful")
   } catch (error) {
     res.status(500).json({
       status: "failed",
