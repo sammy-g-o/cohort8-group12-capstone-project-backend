@@ -61,6 +61,8 @@ export const getProjectsById = async (req, res) => {
     });
   }
 };
+
+// update
 export const updateProject = async (req, res) => {
   try {
     const project = await projectsModel.findByIdAndUpdate(
@@ -90,6 +92,8 @@ export const updateProject = async (req, res) => {
     });
   }
 };
+
+// delete project
 export const deleteProject = async (req, res) => {
   try {
     const project = await projectsModel.findByIdAndDelete(req.params.id);

@@ -18,6 +18,8 @@ export const createTask = async (req, res) => {
     });
   }
 };
+
+// get all task
 export const getAllTasks = async (req, res) => {
   try {
     const tasks = await Task.find({ projectId: req.params.projectId });
@@ -34,6 +36,8 @@ export const getAllTasks = async (req, res) => {
     });
   }
 };
+
+// get single task
 export const getTask = async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
@@ -82,6 +86,8 @@ export const updateTask = async (req, res) => {
     });
   }
 };
+
+// delete task
 export const deleteTask = async (req, res) => {
   try {
     const task = await Task.findByIdAndDelete(req.params.id);
