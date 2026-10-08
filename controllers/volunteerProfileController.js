@@ -1,28 +1,28 @@
 import User from "../models/userModel.js";
 import VolunteerProfile from "../models/volunteerProfileModel.js";
+import AppError from "../utils/appError.js";
 
-export const getMyVolunteerProfile = async (req, res) => {
+export const getMyVolunteerProfile = async (req, res, next) => {
   try {
-    const myProfile = await VolunteerProfile.findOne({ userId: req.user.id });
+    const myProfile = await VolunteerProfile.findOne({
+      userId: req.user.id,
+    }).populate("userId", "name email");
+
     if (!myProfile) {
-      return res.status(404).json({
-        status: "failed",
-        message: "You haven't created a volunteer profile yet",
-      });
+      return next(
+        new AppError("You haven't created a volunteer profile yet", 404),
+      );
     }
     res.status(200).json({
       status: "successfull",
       data: { myProfile },
     });
   } catch (error) {
-    res.status(500).json({
-      status: "failed",
-      message: error.message,
-    });
+    next(error);
   }
 };
 
-export const createVolunteerProfile = async (req, res) => {
+export const createVolunteerProfile = async (req, res, next) => {
   try {
     // const { userId } = req.body;
 
@@ -58,15 +58,16 @@ export const createVolunteerProfile = async (req, res) => {
       data: { newProfile },
     });
   } catch (error) {
-    res.status(500).json({
-      status: "failed",
-      message: error.message,
-    });
+    next(error);
   }
 };
-export const getVolunteerProfile = async (req, res) => {
+
+export const getVolunteerProfile = async (req, res, next) => {
   try {
-    const volunteer = await VolunteerProfile.findById(req.params.id);
+    const volunteer = await VolunteerProfile.findById(req.params.id).populate(
+      "userId",
+      "name email",
+    );
     if (!volunteer) {
       return res.status(404).json({
         status: "failed",
@@ -78,15 +79,16 @@ export const getVolunteerProfile = async (req, res) => {
       data: { volunteer },
     });
   } catch (error) {
-    res.status(500).json({
-      status: "failed",
-      message: error.message,
-    });
+    next(error);
   }
 };
-export const getAllVolunteerProfiles = async (req, res) => {
+
+export const getAllVolunteerProfiles = async (req, res, next) => {
   try {
-    const volunteers = await VolunteerProfile.find();
+    const volunteers = await VolunteerProfile.find().populate(
+      "userId",
+      "name email",
+    );
 
     res.status(200).json({
       status: "successful",
@@ -94,13 +96,11 @@ export const getAllVolunteerProfiles = async (req, res) => {
       data: volunteers.length === 0 ? "no volunteer profiles" : { volunteers },
     });
   } catch (error) {
-    res.status(500).json({
-      status: "failed",
-      message: error.message,
-    });
+    next(error);
   }
 };
-export const updateVolunteerProfile = async (req, res) => {
+
+export const updateVolunteerProfile = async (req, res, next) => {
   try {
     const updatedProfile = await VolunteerProfile.findByIdAndUpdate(
       req.params.id,
@@ -109,10 +109,7 @@ export const updateVolunteerProfile = async (req, res) => {
     );
 
     if (!updatedProfile) {
-      return res.status(404).json({
-        status: "failed",
-        message: "profile not found",
-      });
+      return next(new AppError("Profile not found", 404));
     }
 
     res.status(200).json({
@@ -121,28 +118,20 @@ export const updateVolunteerProfile = async (req, res) => {
       data: { updatedProfile },
     });
   } catch (error) {
-    res.status(500).json({
-      status: "failed",
-      message: error.message,
-    });
+    next(error);
   }
 };
-export const deleteVolunteerProfile = async (req, res) => {
+
+export const deleteVolunteerProfile = async (req, res, next) => {
   try {
     const deletedVolunteerProfile = await VolunteerProfile.findByIdAndDelete(
       req.params.id,
     );
     if (!deletedVolunteerProfile) {
-      return res.status(404).json({
-        status: "failed",
-        message: "Profile not found",
-      });
+      return next(new AppError("Profile not found", 404));
     }
     res.status(204).send("successful");
   } catch (error) {
-    res.status(500).json({
-      status: "failed",
-      message: error.message,
-    });
+    next(error);
   }
 };
