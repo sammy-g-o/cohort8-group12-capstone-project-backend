@@ -7,12 +7,11 @@ const DB = process.env.ATLAS_STRING.replace(
   "<db_password>",
   process.env.MONGODB_PASSWORD,
 );
-const LOCAL = process.env.LOCAL_DB
 
 mongoose
-  .connect(LOCAL)
-  .then(() => console.log(`Database connected successfully`))
-  .catch((err) => console.log("db connection error"));
+  .connect(DB)
+  .then(() => console.log("Database connected successfully"))
+  .catch((err) => console.log("db connection error:", err.message));
 
 const PORT = 3000;
 
