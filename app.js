@@ -22,3 +22,12 @@ app.all("/{*others}", (req, res, next) => {
     message: `can't find ${req.originalUrl} on this server`,
   });
 });
+
+app.use((error, req, res, next) => {
+  error.statusCode = error.statusCode || 500;
+  error.status = error.status || "failed";
+  res.status(error.statusCode).json({
+    status: error.status,
+    message: error.message,
+  });
+});
