@@ -51,7 +51,7 @@ export const getTask = async (req, res, next) => {
 //Update a task
 export const updateTask = async (req, res, next) => {
   try {
-    const task = await Task.findByIdAndUpdate(req.param.id, req.body, {
+    const task = await Task.findByIdAndUpdate(req.params.id, req.body, {
       returnDocument: "after",
       runValidators: true,
     });
