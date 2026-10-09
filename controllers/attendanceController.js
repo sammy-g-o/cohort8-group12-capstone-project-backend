@@ -5,9 +5,7 @@ export const checkIn = async (req, res) => {
     const { volunteerId, taskId } = req.body;
 
     if (!volunteerId || !taskId) {
-      return res.status(400).json({
-        message: "volunteerId and taskId are required",
-      });
+      return next(new AppError("volunteerId and taskId are required", 400));
     }
 
     const attendance = await Attendance.create({
