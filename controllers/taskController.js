@@ -1,4 +1,5 @@
 import Task from "../models/taskModel.js";
+import { taskRouter } from "../routes/taskRoutes.js";
 import AppError from "../utils/appError.js";
 
 //Create a new task
@@ -79,4 +80,17 @@ export const deleteTask = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+export const updateTaskStatus = async (req, res, next) => {
+  const { status } = req.body;
+  const task = await Task.findByIdAndUpdate(req.params.id, status, {
+    runValidators: taskRouter,
+  });
+  if (!task) {
+    return next(new AppError("Task not found", 404));
+  }
+  res.status(200).json({
+    status: "successful",
+  });
 };

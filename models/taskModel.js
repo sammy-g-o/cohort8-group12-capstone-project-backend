@@ -16,7 +16,13 @@ const taskSchema = new mongoose.Schema(
       trim: true,
     },
     description: String,
-    status: String,
+    status: {
+      type: String,
+      enum: {
+        values: ["not started", "in progress", "completed"],
+        message: "task status is either not started, in progress or completed",
+      },
+    },
   },
   { timestamps: true },
 );
