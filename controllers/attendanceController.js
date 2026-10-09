@@ -1,6 +1,7 @@
 import Attendance from "../models/attendanceModel.js";
+import AppError from "../utils/appError.js";
 
-export const checkIn = async (req, res) => {
+export const checkIn = async (req, res, next) => {
   try {
     const { volunteerId, taskId } = req.body;
 
