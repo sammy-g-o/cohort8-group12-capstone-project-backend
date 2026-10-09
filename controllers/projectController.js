@@ -1,7 +1,8 @@
 import projectsModel from "../models/projectsModel.js";
+import AppError from "../utils/appError.js";
 
 //Create a project
-export const createProject = async (req, res) => {
+export const createProject = async (req, res, next) => {
   try {
     const project = await projectsModel.create({
       ...req.body,
@@ -14,15 +15,12 @@ export const createProject = async (req, res) => {
       data: { project },
     });
   } catch (error) {
-    res.status(400).json({
-      status: "Failed",
-      message: error.message,
-    });
+    next(error);
   }
 };
 
 //Get all projects
-export const getProjects = async (req, res) => {
+export const getProjects = async (req, res, next) => {
   try {
     const projects = await projectsModel.find();
 
@@ -32,22 +30,17 @@ export const getProjects = async (req, res) => {
       data: { projects },
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Failed to get projects",
-      error: error.message,
-    });
+    next(error);
   }
 };
 
 //Get one project
-export const getProjectsById = async (req, res) => {
+export const getProjectById = async (req, res, next) => {
   try {
     const project = await projectsModel.findById(req.params.id);
 
     if (!project) {
-      return res.status(404).json({
-        message: "Projects not found",
-      });
+      return next(new AppError("Project not found", 404));
     }
 
     res.status(200).json({
@@ -55,15 +48,10 @@ export const getProjectsById = async (req, res) => {
       data: { project },
     });
   } catch (error) {
-    res.status(400).json({
-      message: "Failed to get project",
-      error: error.message,
-    });
+    next(error);
   }
 };
-
-// update
-export const updateProject = async (req, res) => {
+export const updateProject = async (req, res, next) => {
   try {
     const project = await projectsModel.findByIdAndUpdate(
       req.params.id,
@@ -75,9 +63,7 @@ export const updateProject = async (req, res) => {
     );
 
     if (!project) {
-      return res.status(404).json({
-        message: "Projects not found",
-      });
+      return next(new AppError("Project not found", 404));
     }
 
     res.status(200).json({
@@ -86,31 +72,19 @@ export const updateProject = async (req, res) => {
       data: { project },
     });
   } catch (error) {
-    res.status(400).json({
-      message: "Failed to get project",
-      error: error.message,
-    });
+    next(error);
   }
 };
-
-// delete project
-export const deleteProject = async (req, res) => {
+export const deleteProject = async (req, res, next) => {
   try {
     const project = await projectsModel.findByIdAndDelete(req.params.id);
 
     if (!project) {
-      return res.status(404).json({
-        message: "Projects not found",
-      });
+      return next(new AppError("Project not found", 404));
     }
 
-    res.status(204).json({
-      status: "successful",
-    });
+    res.status(204).send();
   } catch (error) {
-    res.status(400).json({
-      message: "Failed to get project",
-      error: error.message,
-    });
+    next(error);
   }
 };

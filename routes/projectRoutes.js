@@ -4,7 +4,7 @@ import {
   createProject,
   deleteProject,
   getProjects,
-  getProjectsById,
+  getProjectById,
   updateProject,
 } from "../controllers/projectController.js";
 import { authenticate, authorize } from "../middleware/authMiddleware.js";
@@ -16,7 +16,7 @@ projectRoute
   .get(authenticate, getProjects);
 projectRoute
   .route("/:id")
-  .get(authenticate, getProjectsById)
+  .get(authenticate, getProjectById)
   .patch(authenticate, authorize("coordinator"), updateProject)
   .delete(authenticate, authorize("coordinator"), deleteProject);
 

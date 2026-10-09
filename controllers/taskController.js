@@ -1,7 +1,8 @@
 import Task from "../models/taskModel.js";
+import AppError from "../utils/appError.js";
 
 //Create a new task
-export const createTask = async (req, res) => {
+export const createTask = async (req, res, next) => {
   try {
     const { projectId } = req.params;
     const task = await Task.create({ ...req.body, projectId });
@@ -12,17 +13,15 @@ export const createTask = async (req, res) => {
       data: { task },
     });
   } catch (error) {
-    res.status(400).json({
-      message: "Failed to create task",
-      error: error.message,
-    });
+    next(error);
   }
 };
-
-// get all task
-export const getAllTasks = async (req, res) => {
+export const getAllTasks = async (req, res, next) => {
   try {
-    const tasks = await Task.find({ projectId: req.params.projectId });
+    const tasks = await Task.find({ projectId: req.params.projectId }).populate(
+      "projectId",
+      "name",
+    );
 
     res.status(200).json({
       status: "successfully",
@@ -30,22 +29,14 @@ export const getAllTasks = async (req, res) => {
       data: tasks.length === 0 ? "no task" : { tasks },
     });
   } catch (error) {
-    res.status(400).json({
-      message: "Failed to create task",
-      error: error.message,
-    });
+    next(error);
   }
 };
-
-// get single task
-export const getTask = async (req, res) => {
+export const getTask = async (req, res, next) => {
   try {
     const task = await Task.findById(req.params.id);
     if (!task) {
-      return res.status(400).json({
-        status: "failed",
-        message: "task not found",
-      });
+      return next(new AppError("Task not found", 404));
     }
 
     res.status(200).json({
@@ -53,25 +44,20 @@ export const getTask = async (req, res) => {
       data: { task },
     });
   } catch (error) {
-    res.status(400).json({
-      message: "Failed to create task",
-      error: error.message,
-    });
+    next(error);
   }
 };
 
 //Update a task
-export const updateTask = async (req, res) => {
+export const updateTask = async (req, res, next) => {
   try {
-    const task = await Task.findByIdAndUpdate(req.param.id, req.body, {
+    const task = await Task.findByIdAndUpdate(req.params.id, req.body, {
       returnDocument: "after",
       runValidators: true,
     });
 
     if (!task) {
-      return res.status(404).json({
-        message: "Task not found",
-      });
+      return next(new AppError("Task not found", 404));
     }
 
     res.status(200).json({
@@ -80,29 +66,17 @@ export const updateTask = async (req, res) => {
       data: { task },
     });
   } catch (error) {
-    res.status(400).json({
-      message: "Failed to update task",
-      error: error.message,
-    });
+    next(error);
   }
 };
-
-// delete task
-export const deleteTask = async (req, res) => {
+export const deleteTask = async (req, res, next) => {
   try {
     const task = await Task.findByIdAndDelete(req.params.id);
     if (!task) {
-      return res.status(404).json({
-        message: "Task not found",
-      });
+      return next(new AppError("Task not found", 404));
     }
-    res.status(204).json({
-      status: "successfully",
-    });
+    res.status(204).send();
   } catch (error) {
-    res.status(400).json({
-      message: "Failed to create task",
-      error: error.message,
-    });
+    next(error);
   }
 };
