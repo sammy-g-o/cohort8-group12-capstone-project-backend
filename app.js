@@ -3,6 +3,7 @@ import morgan from "morgan";
 import authRouter from "./routes/authRoutes.js";
 import { projectRoute } from "./routes/projectRoutes.js";
 import { volunteerRoute } from "./routes/volunteerProfileRoute.js";
+import attendanceRouter from "./routes/attendanceRoutes.js";
 import cors from "cors";
 import { corsOptions } from "./config/cors.js";
 import { globalErrorHandler } from "./controllers/errorController.js";
@@ -17,6 +18,7 @@ app.use(morgan("dev"));
 app.use("/auth", authRouter);
 app.use("/projects", projectRoute);
 app.use("/volunteers", volunteerRoute);
+app.use("/attendance", attendanceRouter);
 
 // To handle undefined routes
 app.all("/{*others}", (req, res, next) => {
