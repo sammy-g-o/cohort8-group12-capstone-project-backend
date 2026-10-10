@@ -84,9 +84,14 @@ export const deleteTask = async (req, res, next) => {
 
 export const updateTaskStatus = async (req, res, next) => {
   const { status } = req.body;
-  const task = await Task.findByIdAndUpdate(req.params.id, status, {
-    runValidators: taskRouter,
-  });
+  const task = await Task.findByIdAndUpdate(
+    req.params.id,
+    { status },
+    {
+      returnDocument: "after",
+      runValidators: true,
+    },
+  );
   if (!task) {
     return next(new AppError("Task not found", 404));
   }
