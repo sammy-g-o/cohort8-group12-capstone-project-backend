@@ -10,7 +10,7 @@ export const createProject = async (req, res, next) => {
     });
 
     res.status(201).json({
-      status: "successful",
+      status: "success",
       message: "Project created successfully",
       data: { project },
     });
@@ -25,7 +25,7 @@ export const getProjects = async (req, res, next) => {
     const projects = await projectsModel.find();
 
     res.status(200).json({
-      status: "successful",
+      status: "success",
       result: projects.length,
       data: { projects },
     });
@@ -44,7 +44,7 @@ export const getProjectById = async (req, res, next) => {
     }
 
     res.status(200).json({
-      status: "successful",
+      status: "success",
       data: { project },
     });
   } catch (error) {
@@ -67,7 +67,7 @@ export const updateProject = async (req, res, next) => {
     }
 
     res.status(200).json({
-      status: "successful",
+      status: "success",
       message: "project updated successfully",
       data: { project },
     });
