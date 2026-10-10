@@ -8,6 +8,12 @@ import cors from "cors";
 import { corsOptions } from "./config/cors.js";
 import { globalErrorHandler } from "./controllers/errorController.js";
 import AppError from "./utils/appError.js";
+import { organizationRouter } from "./routes/organizationRoutes.js";
+import notificationRouter from "./routes/notificationRoutes.js";
+import { dashboardRouter } from "./routes/dashboardRoutes.js";
+import { userRouter } from "./routes/userRoutes.js";
+import { alertRouter } from "./routes/alertRoutes.js";
+import { reportRouter } from "./routes/reportRoutes.js";
 
 export const app = express();
 
@@ -16,9 +22,15 @@ app.use(express.json());
 app.use(morgan("dev"));
 
 app.use("/auth", authRouter);
+app.use("/users", userRouter);
+app.use("/alerts", alertRouter);
+app.use("/reports", reportRouter);
 app.use("/projects", projectRoute);
+app.use("/dashboard", dashboardRouter);
 app.use("/volunteers", volunteerRoute);
 app.use("/attendance", attendanceRouter);
+app.use("/organizations", organizationRouter);
+app.use("/notifications", notificationRouter);
 
 // To handle undefined routes
 app.all("/{*others}", (req, res, next) => {
