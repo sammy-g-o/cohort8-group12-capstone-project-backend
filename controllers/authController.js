@@ -2,8 +2,8 @@ import User from "../models/userModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-const signToken = (id, role) => {
-  return jwt.sign({ id, role }, process.env.JWT_SECRET, {
+const signToken = (id, role, organizationId) => {
+  return jwt.sign({ id, role, organizationId }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 };
@@ -91,13 +91,15 @@ export const login = async (req, res) => {
       });
     }
 
-    const token = signToken(user._id, user.role);
+    const token = signToken(user._id, user.role, user.organizationId);
 
     res.status(200).json({
       message: "Login successful",
       user: {
         name: user.name,
         email: user.email,
+        role: user.role,
+        organizationId: user.organizationId,
         token,
       },
     });
