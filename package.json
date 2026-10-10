@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "license": "ISC",
-  "author": "",
+  "author": "Group 12 backend track",
   "type": "module",
   "main": "server.js",
   "scripts": {
