@@ -33,7 +33,7 @@ export const updateMyVolunteerProfile = async (req, res, next) => {
       );
     }
     res.status(200).json({
-      status: "successl",
+      status: "success",
       data: { myProfile },
     });
   } catch (error) {
@@ -66,14 +66,14 @@ export const createVolunteerProfile = async (req, res, next) => {
 
     const user = await User.findById(req.user.id);
     if (!user) {
-      return next(new AppError("user not found", 404))
+      return next(new AppError("user not found", 404));
     }
     if (user.role !== "volunteer") {
-      return next(new AppError("User is not a volunteer", 403))
+      return next(new AppError("User is not a volunteer", 403));
     }
     const existing = await VolunteerProfile.findOne({ userId: req.user.id });
     if (existing) {
-      return next(new AppError("Profile already exists for this user", 409))
+      return next(new AppError("Profile already exists for this user", 409));
     }
 
     const newProfile = await VolunteerProfile.create({
@@ -98,7 +98,7 @@ export const getVolunteerProfile = async (req, res, next) => {
       "name email phoneNumber",
     );
     if (!volunteer) {
-      return next("No profile found", 404)
+      return next(new AppError("No profile found", 404));
     }
     res.status(200).json({
       status: "success",
