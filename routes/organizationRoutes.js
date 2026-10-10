@@ -8,7 +8,7 @@ import {
   register,
   suspendOrganization,
   verifyOrganization,
-} from "../controllers/organizationController";
+} from "../controllers/organizationController.js";
 
 export const organizationRouter = express.Router();
 
