@@ -6,7 +6,45 @@ export const getMyVolunteerProfile = async (req, res, next) => {
   try {
     const myProfile = await VolunteerProfile.findOne({
       userId: req.user.id,
-    }).populate("userId", "name email");
+    }).populate("userId", "name email phoneNumber");
+
+    if (!myProfile) {
+      return next(
+        new AppError("You haven't created a volunteer profile yet", 404),
+      );
+    }
+    res.status(200).json({
+      status: "successfull",
+      data: { myProfile },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+export const updateMyVolunteerProfile = async (req, res, next) => {
+  try {
+    const myProfile = await VolunteerProfile.findOneAndUpdate({
+      userId: req.user.id,
+    });
+
+    if (!myProfile) {
+      return next(
+        new AppError("You haven't created a volunteer profile yet", 404),
+      );
+    }
+    res.status(200).json({
+      status: "successfull",
+      data: { myProfile },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+export const deleteMyVolunteerProfile = async (req, res, next) => {
+  try {
+    const myProfile = await VolunteerProfile.findOneAndDelete({
+      userId: req.user.id,
+    });
 
     if (!myProfile) {
       return next(
@@ -66,7 +104,7 @@ export const getVolunteerProfile = async (req, res, next) => {
   try {
     const volunteer = await VolunteerProfile.findById(req.params.id).populate(
       "userId",
-      "name email",
+      "name email phoneNumber",
     );
     if (!volunteer) {
       return res.status(404).json({
@@ -87,7 +125,7 @@ export const getAllVolunteerProfiles = async (req, res, next) => {
   try {
     const volunteers = await VolunteerProfile.find().populate(
       "userId",
-      "name email",
+      "name email phoneNumber",
     );
 
     res.status(200).json({
