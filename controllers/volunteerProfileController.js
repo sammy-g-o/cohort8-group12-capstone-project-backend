@@ -14,7 +14,7 @@ export const getMyVolunteerProfile = async (req, res, next) => {
       );
     }
     res.status(200).json({
-      status: "successfull",
+      status: "success",
       data: { myProfile },
     });
   } catch (error) {
@@ -33,7 +33,7 @@ export const updateMyVolunteerProfile = async (req, res, next) => {
       );
     }
     res.status(200).json({
-      status: "successfull",
+      status: "successl",
       data: { myProfile },
     });
   } catch (error) {
@@ -52,7 +52,7 @@ export const deleteMyVolunteerProfile = async (req, res, next) => {
       );
     }
     res.status(200).json({
-      status: "successfull",
+      status: "success",
       data: { myProfile },
     });
   } catch (error) {
@@ -66,23 +66,14 @@ export const createVolunteerProfile = async (req, res, next) => {
 
     const user = await User.findById(req.user.id);
     if (!user) {
-      return res.status(404).json({
-        status: "failed",
-        message: "user not found",
-      });
+      return next(new AppError("user not found", 404))
     }
     if (user.role !== "volunteer") {
-      return res.status(403).json({
-        status: "failed",
-        message: "User is not a volunteer",
-      });
+      return next(new AppError("User is not a volunteer", 403))
     }
     const existing = await VolunteerProfile.findOne({ userId: req.user.id });
     if (existing) {
-      return res.status(409).json({
-        status: "failed",
-        message: "Profile already exists for this user",
-      });
+      return next(new AppError("Profile already exists for this user", 409))
     }
 
     const newProfile = await VolunteerProfile.create({
@@ -91,7 +82,7 @@ export const createVolunteerProfile = async (req, res, next) => {
     });
 
     res.status(201).json({
-      status: "successful",
+      status: "success",
       message: "user successfully created",
       data: { newProfile },
     });
@@ -107,10 +98,7 @@ export const getVolunteerProfile = async (req, res, next) => {
       "name email phoneNumber",
     );
     if (!volunteer) {
-      return res.status(404).json({
-        status: "failed",
-        message: "No profile found",
-      });
+      return next("No profile found", 404)
     }
     res.status(200).json({
       status: "success",
@@ -129,7 +117,7 @@ export const getAllVolunteerProfiles = async (req, res, next) => {
     );
 
     res.status(200).json({
-      status: "successful",
+      status: "success",
       result: volunteers.length,
       data: volunteers.length === 0 ? "no volunteer profiles" : { volunteers },
     });
@@ -151,7 +139,7 @@ export const updateVolunteerProfile = async (req, res, next) => {
     }
 
     res.status(200).json({
-      status: "successful",
+      status: "success",
       message: "successfully updated profile",
       data: { updatedProfile },
     });
@@ -168,7 +156,7 @@ export const deleteVolunteerProfile = async (req, res, next) => {
     if (!deletedVolunteerProfile) {
       return next(new AppError("Profile not found", 404));
     }
-    res.status(204).send("successful");
+    res.status(204).send("success");
   } catch (error) {
     next(error);
   }
