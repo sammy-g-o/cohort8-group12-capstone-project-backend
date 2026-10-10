@@ -21,9 +21,6 @@ export const checkIn = async (req, res, next) => {
       attendance,
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Failed to check in volunteer",
-      error: error.message,
-    });
+    next(error);
   }
 };
