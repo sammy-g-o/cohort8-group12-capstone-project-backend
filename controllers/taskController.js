@@ -9,7 +9,7 @@ export const createTask = async (req, res, next) => {
     const task = await Task.create({ ...req.body, projectId });
 
     res.status(201).json({
-      status: "successfully",
+      status: "success",
       message: "task successfully created",
       data: { task },
     });
@@ -25,7 +25,7 @@ export const getAllTasks = async (req, res, next) => {
     );
 
     res.status(200).json({
-      status: "successfully",
+      status: "success",
       result: tasks.length,
       data: tasks.length === 0 ? "no task" : { tasks },
     });
@@ -41,7 +41,7 @@ export const getTask = async (req, res, next) => {
     }
 
     res.status(200).json({
-      status: "successfully",
+      status: "success",
       data: { task },
     });
   } catch (error) {
@@ -62,7 +62,7 @@ export const updateTask = async (req, res, next) => {
     }
 
     res.status(200).json({
-      status: "successful",
+      status: "success",
       message: "Task updated successfully",
       data: { task },
     });
@@ -96,6 +96,6 @@ export const updateTaskStatus = async (req, res, next) => {
     return next(new AppError("Task not found", 404));
   }
   res.status(200).json({
-    status: "successful",
+    status: "success",
   });
 };
