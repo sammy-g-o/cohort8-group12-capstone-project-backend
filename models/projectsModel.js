@@ -4,7 +4,6 @@ const projectSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, "Project must have a name"],
-    unique: true,
     trim: true,
   },
   description: {
@@ -12,7 +11,22 @@ const projectSchema = new mongoose.Schema({
     required: [true, "Project must have a description"],
     trim: true,
   },
-  status: { type: String, default: "Not started" },
+  status: {
+    type: String,
+    enum: {
+      values: ["not started", "active", "on hold", "completed", "archived"],
+      message:
+        "status is either: not started, active, on hold, completed or archived",
+    },
+    default: "Not started",
+  },
+  location: String,
+  organizationId: {
+    type: mongoose.Types.ObjectId,
+    ref: "Organization",
+    required: [true, "project needs an organization "],
+  },
+  maxVolunteers: Number,
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   startDate: {
     type: Date,
@@ -26,6 +40,6 @@ const projectSchema = new mongoose.Schema({
   },
   endDate: { type: Date, required: [true, "Project must have a end date"] },
 });
-
+projectSchema.index({ organizationId: 1, name: 1 }, { unique: true });
 const projectsModel = mongoose.model("Project", projectSchema);
 export default projectsModel;
