@@ -19,6 +19,10 @@ const userSchema = new mongoose.Schema(
     },
     phoneNumber: {
       type: String,
+      validate: {
+        validator: (val) => validator.isMobilePhone(val, "any"),
+        message: "phone number is not valid",
+      },
       trim: true,
     },
     passwordHash: {
@@ -32,6 +36,10 @@ const userSchema = new mongoose.Schema(
         message: "role is either admin, coordinator or volunteer ",
       },
       default: "volunteer",
+    },
+    organizationId: {
+      type: mongoose.Types.ObjectId,
+      ref: "Organization",
     },
   },
   { timestamps: true },
