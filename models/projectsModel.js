@@ -18,7 +18,7 @@ const projectSchema = new mongoose.Schema({
       message:
         "status is either: not started, active, on hold, completed or archived",
     },
-    default: "Not started",
+    default: "not started",
   },
   location: String,
   organizationId: {
