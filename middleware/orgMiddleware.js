@@ -1,14 +1,19 @@
-
 import Organization from "../models/organizationModel.js";
 import AppError from "../utils/appError.js";
 
 export const requireVerifiedOrg = async (req, res, next) => {
   try {
+    // Volunteers do not belong to an organization; their access is checked per task
+    if (req.user?.role === "volunteer") return next();
+
     const organizationId = req.user?.organizationId;
 
     if (!organizationId) {
       return next(
-        new AppError("You must belong to an organization to perform this action", 403),
+        new AppError(
+          "You must belong to an organization to perform this action",
+          403,
+        ),
       );
     }
 
@@ -16,7 +21,10 @@ export const requireVerifiedOrg = async (req, res, next) => {
 
     if (!organization || organization.status !== "verified") {
       return next(
-        new AppError("Your organization must be verified to perform this action", 403),
+        new AppError(
+          "Your organization must be verified to perform this action",
+          403,
+        ),
       );
     }
 
