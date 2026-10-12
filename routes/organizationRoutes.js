@@ -1,3 +1,4 @@
+
 import express from "express";
 import {
   addOrganizationCoordinators,
@@ -9,16 +10,47 @@ import {
   suspendOrganization,
   verifyOrganization,
 } from "../controllers/organizationController.js";
+import { authenticate, authorize } from "../middleware/authMiddleware.js";
 
 export const organizationRouter = express.Router();
 
-organizationRouter.post("/register", register);
-organizationRouter.route("/").get(getAllOrganizations);
-organizationRouter.route("/:id").get(getOrganizationById);
-organizationRouter.route("/:id/verify").patch(verifyOrganization);
-organizationRouter.route("/suspend").patch(suspendOrganization);
-organizationRouter
-  .route("/me/coordinators")
-  .post(addOrganizationCoordinators)
-  .get(getOrganizationCoordinators);
-organizationRouter.route("/me/coordinators/:userId").delete(deleteOrganizationCoordinator);
+organizationRouter.post("/register", authenticate, register);
+
+organizationRouter.get("/", authenticate, getAllOrganizations);
+
+organizationRouter.get("/:id", authenticate, getOrganizationById);
+
+organizationRouter.patch(
+  "/:id/verify",
+  authenticate,
+  authorize("admin"),
+  verifyOrganization,
+);
+
+organizationRouter.patch(
+  "/:id/suspend",
+  authenticate,
+  authorize("admin"),
+  suspendOrganization,
+);
+
+organizationRouter.post(
+  "/me/coordinators",
+  authenticate,
+  authorize("coordinator"),
+  addOrganizationCoordinators,
+);
+
+organizationRouter.get(
+  "/me/coordinators",
+  authenticate,
+  authorize("coordinator"),
+  getOrganizationCoordinators,
+);
+
+organizationRouter.delete(
+  "/me/coordinators/:userId",
+  authenticate,
+  authorize("coordinator"),
+  deleteOrganizationCoordinator,
+);

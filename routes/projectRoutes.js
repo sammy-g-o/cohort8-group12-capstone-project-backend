@@ -1,3 +1,4 @@
+
 import express from "express";
 import { taskRouter } from "./taskRoutes.js";
 import {
@@ -7,17 +8,38 @@ import {
   getProjectById,
   updateProject,
 } from "../controllers/projectController.js";
-import { authenticate, authorize } from "../middleware/authMiddleware.js";
+import {
+  authenticate,
+  authorize,
+} from "../middleware/authMiddleware.js";
+import { requireVerifiedOrg } from "../middleware/orgMiddleware.js";
 
 export const projectRoute = express.Router();
+
 projectRoute
   .route("/")
-  .post(authenticate, authorize("coordinator"), createProject)
+  .post(
+    authenticate,
+    authorize("coordinator"),
+    requireVerifiedOrg,
+    createProject,
+  )
   .get(authenticate, getProjects);
+
 projectRoute
   .route("/:id")
   .get(authenticate, getProjectById)
-  .patch(authenticate, authorize("coordinator"), updateProject)
-  .delete(authenticate, authorize("coordinator"), deleteProject);
+  .patch(
+    authenticate,
+    authorize("coordinator"),
+    requireVerifiedOrg,
+    updateProject,
+  )
+  .delete(
+    authenticate,
+    authorize("coordinator"),
+    requireVerifiedOrg,
+    deleteProject,
+  );
 
 projectRoute.use("/:projectId/tasks", taskRouter);
