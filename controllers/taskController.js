@@ -9,6 +9,14 @@ import { createNotification } from "../utils/notify.js";
 // Confirm that the project belongs to the user's organization
 const getOrganizationProject = async (req, next) => {
   const { projectId } = req.params;
+    // Volunteers do not belong to an organization. They reach a project only through
+  // tasks assigned to them, so the callers must also filter tasks by assignedTo.
+  if (req.user?.role === "volunteer") {
+    const project = await Project.findById(projectId);
+    if (!project) return next(new AppError("Project not found", 404));
+    return project;
+  }
+
   const organizationId = req.user?.organizationId;
 
   if (!organizationId) {
@@ -87,10 +95,10 @@ export const getTask = async (req, res, next) => {
     const project = await getOrganizationProject(req, next);
     if (!project) return;
 
-    const task = await Task.findOne({
-      _id: req.params.id,
-      projectId: project._id,
-    });
+        const filter = { _id: req.params.id, projectId: project._id };
+    if (req.user.role === "volunteer") filter.assignedTo = req.user.id;
+
+    const task = await Task.findOne(filter);
 
     if (!task) {
       return next(new AppError("Task not found", 404));
@@ -252,6 +260,31 @@ export const assignTask = async (req, res, next) => {
       status: "success",
       message: "Task assigned successfully",
       data: { task },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /users/me/tasks — tasks assigned to the logged-in volunteer
+export const getMyTasks = async (req, res, next) => {
+  try {
+    const { status, page, limit } = req.query;
+
+    const features = new ApiFeatures(Task.find(), { status, page, limit })
+      .filter()
+      .sort()
+      .limitFields()
+      .pagination();
+
+    const tasks = await features.query
+      .find({ assignedTo: req.user.id }) // scope last
+      .populate("projectId", "name status startDate endDate");
+
+    res.status(200).json({
+      status: "success",
+      results: tasks.length,
+      data: { tasks },
     });
   } catch (error) {
     next(error);
