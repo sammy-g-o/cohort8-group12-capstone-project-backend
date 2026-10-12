@@ -2,6 +2,9 @@ import Task from "../models/taskModel.js";
 import Project from "../models/projectsModel.js";
 import AppError from "../utils/appError.js";
 import ApiFeatures from "../utils/ApiFeatures.js";
+import User from "../models/userModel.js";
+import mongoose from "mongoose";
+import { createNotification } from "../utils/notify.js";
 
 // Confirm that the project belongs to the user's organization
 const getOrganizationProject = async (req, next) => {
@@ -204,6 +207,50 @@ export const updateTaskStatus = async (req, res, next) => {
     res.status(200).json({
       status: "success",
       message: "Task status updated successfully",
+      data: { task },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Assign a task to a volunteer
+export const assignTask = async (req, res, next) => {
+  try {
+    const project = await getOrganizationProject(req, next);
+    if (!project) return;
+
+    const { volunteerId } = req.body;
+
+    if (!volunteerId || !mongoose.isValidObjectId(volunteerId)) {
+      return next(new AppError("A valid volunteerId is required", 400));
+    }
+
+    const volunteer = await User.findOne({ _id: volunteerId, role: "volunteer" });
+
+    if (!volunteer) {
+      return next(new AppError("Volunteer not found", 404));
+    }
+
+    const task = await Task.findOneAndUpdate(
+      { _id: req.params.id, projectId: project._id },
+      { assignedTo: volunteer._id },
+      { new: true, runValidators: true },
+    );
+
+    if (!task) {
+      return next(new AppError("Task not found", 404));
+    }
+
+    await createNotification(
+      volunteer._id,
+      `You have been assigned a task: ${task.title}`,
+      { type: "task_assigned", link: `/projects/${project._id}/tasks/${task._id}` },
+    );
+
+    res.status(200).json({
+      status: "success",
+      message: "Task assigned successfully",
       data: { task },
     });
   } catch (error) {

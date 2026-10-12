@@ -1,6 +1,6 @@
-
 import express from "express";
 import {
+  assignTask,
   createTask,
   deleteTask,
   getAllTasks,
@@ -15,33 +15,18 @@ export const taskRouter = express.Router({ mergeParams: true });
 
 taskRouter
   .route("/")
-  .post(
-    authenticate,
-    authorize("coordinator"),
-    requireVerifiedOrg,
-    createTask
-  )
-  .get(
-    authenticate,
-    authorize("coordinator"),
-    requireVerifiedOrg,
-    getAllTasks
-  );
+  .post(authenticate, authorize("coordinator"), requireVerifiedOrg, createTask)
+  .get(authenticate, authorize("coordinator"), requireVerifiedOrg, getAllTasks);
 
 taskRouter
   .route("/:id")
-  .patch(
-    authenticate,
-    authorize("coordinator"),
-    requireVerifiedOrg,
-    updateTask
-  )
+  .patch(authenticate, authorize("coordinator"), requireVerifiedOrg, updateTask)
   .get(authenticate, requireVerifiedOrg, getTask)
   .delete(
     authenticate,
     authorize("coordinator"),
     requireVerifiedOrg,
-    deleteTask
+    deleteTask,
   );
 
 // Volunteers and coordinators can update task status.
@@ -50,5 +35,13 @@ taskRouter.patch(
   "/:id/status",
   authenticate,
   requireVerifiedOrg,
-  updateTaskStatus
+  updateTaskStatus,
+);
+// Coordinators assign a task to a volunteer
+taskRouter.patch(
+  "/:id/assign",
+  authenticate,
+  authorize("coordinator"),
+  requireVerifiedOrg,
+  assignTask,
 );
