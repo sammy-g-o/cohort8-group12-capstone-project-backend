@@ -38,8 +38,9 @@ const userSchema = new mongoose.Schema(
       default: "volunteer",
     },
     organizationId: {
-      type: mongoose.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "Organization",
+      default: null,
     },
   },
   { timestamps: true },

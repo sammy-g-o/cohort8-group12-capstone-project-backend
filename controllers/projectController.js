@@ -1,11 +1,25 @@
+
 import projectsModel from "../models/projectsModel.js";
 import AppError from "../utils/appError.js";
 
-//Create a project
+// Create a project
 export const createProject = async (req, res, next) => {
   try {
+    if (!req.user.organizationId) {
+      return next(
+        new AppError("You must belong to an organization to create a project", 403),
+      );
+    }
+
     const project = await projectsModel.create({
-      ...req.body,
+      name: req.body.name,
+      description: req.body.description,
+      status: req.body.status,
+      location: req.body.location,
+      maxVolunteers: req.body.maxVolunteers,
+      startDate: req.body.startDate,
+      endDate: req.body.endDate,
+      organizationId: req.user.organizationId,
       createdBy: req.user.id,
     });
 
@@ -19,10 +33,15 @@ export const createProject = async (req, res, next) => {
   }
 };
 
-//Get all projects
+// Get projects
 export const getProjects = async (req, res, next) => {
   try {
-    const projects = await projectsModel.find();
+    const filter =
+      req.user.role === "admin"
+        ? {}
+        : { organizationId: req.user.organizationId };
+
+    const projects = await projectsModel.find(filter);
 
     res.status(200).json({
       status: "success",
@@ -34,10 +53,18 @@ export const getProjects = async (req, res, next) => {
   }
 };
 
-//Get one project
+// Get one project
 export const getProjectById = async (req, res, next) => {
   try {
-    const project = await projectsModel.findById(req.params.id);
+    const filter =
+      req.user.role === "admin"
+        ? { _id: req.params.id }
+        : {
+            _id: req.params.id,
+            organizationId: req.user.organizationId,
+          };
+
+    const project = await projectsModel.findOne(filter);
 
     if (!project) {
       return next(new AppError("Project not found", 404));
@@ -51,13 +78,36 @@ export const getProjectById = async (req, res, next) => {
     next(error);
   }
 };
+
+// Update a project belonging to the coordinator's organization
 export const updateProject = async (req, res, next) => {
   try {
-    const project = await projectsModel.findByIdAndUpdate(
-      req.params.id,
-      req.body,
+    const allowedFields = [
+      "name",
+      "description",
+      "status",
+      "location",
+      "maxVolunteers",
+      "startDate",
+      "endDate",
+    ];
+
+    const updates = {};
+
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        updates[field] = req.body[field];
+      }
+    }
+
+    const project = await projectsModel.findOneAndUpdate(
       {
-        returnDocument: "after",
+        _id: req.params.id,
+        organizationId: req.user.organizationId,
+      },
+      updates,
+      {
+        new: true,
         runValidators: true,
       },
     );
@@ -68,16 +118,21 @@ export const updateProject = async (req, res, next) => {
 
     res.status(200).json({
       status: "success",
-      message: "project updated successfully",
+      message: "Project updated successfully",
       data: { project },
     });
   } catch (error) {
     next(error);
   }
 };
+
+// Delete a project belonging to the coordinator's organization
 export const deleteProject = async (req, res, next) => {
   try {
-    const project = await projectsModel.findByIdAndDelete(req.params.id);
+    const project = await projectsModel.findOneAndDelete({
+      _id: req.params.id,
+      organizationId: req.user.organizationId,
+    });
 
     if (!project) {
       return next(new AppError("Project not found", 404));
