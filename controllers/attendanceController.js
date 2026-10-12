@@ -216,6 +216,9 @@ export const verifyAttendance = async (req, res, next) => {
     if (!attendance) {
       return next(new AppError("Attendance record not found", 404));
     }
+    if (attendance.verified) {
+      return next(new AppError("Attendance is already verified", 409));
+    }
 
     attendance.verified = true;
     attendance.verifiedBy = req.user.id;
