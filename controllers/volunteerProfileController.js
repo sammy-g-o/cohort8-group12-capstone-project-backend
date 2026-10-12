@@ -1,12 +1,33 @@
 import User from "../models/userModel.js";
 import VolunteerProfile from "../models/volunteerProfileModel.js";
 import AppError from "../utils/appError.js";
+import ApiFeatures from "../utils/ApiFeatures.js";
+import Project from "../models/projectsModel.js";
+import Task from "../models/taskModel.js";
 
 export const getMyVolunteerProfile = async (req, res, next) => {
   try {
-    const myProfile = await VolunteerProfile.findOne({
-      userId: req.user.id,
-    }).populate("userId", "name email phoneNumber");
+        // only pass through the filters coordinators need to discover volunteers
+    // (stops clients filtering on or selecting hidden fields like emergencyContact)
+    const { skills, interests, location, availability, page, limit } = req.query;
+
+    const features = new ApiFeatures(VolunteerProfile.find(), {
+      skills,
+      interests,
+      location,
+      availability,
+      page,
+      limit,
+    })
+      .filter()
+      .sort()
+      .limitFields()
+      .pagination();
+
+    const volunteers = await features.query.populate(
+      "userId",
+      "name email phoneNumber",
+    );
 
     if (!myProfile) {
       return next(
@@ -157,6 +178,37 @@ export const deleteVolunteerProfile = async (req, res, next) => {
       return next(new AppError("Profile not found", 404));
     }
     res.status(204).send("success");
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /volunteers/organization — volunteers assigned to tasks in the coordinator's NGO
+export const getOrganizationVolunteers = async (req, res, next) => {
+  try {
+    if (!req.user.organizationId) {
+      return next(
+        new AppError("You must belong to an organization to view its volunteers", 403),
+      );
+    }
+
+    const projectIds = await Project.distinct("_id", {
+      organizationId: req.user.organizationId,
+    });
+    const volunteerIds = await Task.distinct("assignedTo", {
+      projectId: { $in: projectIds },
+      assignedTo: { $ne: null },
+    });
+
+    const volunteers = await VolunteerProfile.find({
+      userId: { $in: volunteerIds },
+    }).populate("userId", "name email phoneNumber");
+
+    res.status(200).json({
+      status: "success",
+      results: volunteers.length,
+      data: { volunteers },
+    });
   } catch (error) {
     next(error);
   }

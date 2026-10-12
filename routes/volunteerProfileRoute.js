@@ -5,6 +5,7 @@ import {
   deleteVolunteerProfile,
   getAllVolunteerProfiles,
   getMyVolunteerProfile,
+  getOrganizationVolunteers,
   getVolunteerProfile,
   updateMyVolunteerProfile,
   updateVolunteerProfile,
@@ -26,6 +27,12 @@ volunteerRoute
     authorize("admin", "coordinator"),
     getAllVolunteerProfiles,
   );
+volunteerRoute.get(
+  "/organization",
+  authenticate,
+  authorize("coordinator"),
+  getOrganizationVolunteers,
+);
 volunteerRoute
   .route("/:id")
   .patch(authenticate, updateVolunteerProfile)
