@@ -20,7 +20,9 @@ export const getNotifications = async (req, res, next) => {
       notificationModel.countDocuments({ userId: req.user.id, read: false }),
     ]);
 
-    res.status(200).json({ status: "success", notifications, unreadCount });
+    res
+      .status(200)
+      .json({ status: "success", data: { notifications }, unreadCount });
   } catch (error) {
     next(error);
   }
