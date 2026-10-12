@@ -52,7 +52,7 @@ export const markOneRead = async (req, res, next) => {
     if (!notification) {
       return next(new AppError("Notification not found", 404));
     }
-    res.status(200).json(notification);
+    res.status(200).json({ status: "success", data: { notification } });
   } catch (error) {
     next(error);
   }
