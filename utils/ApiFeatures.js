@@ -5,6 +5,14 @@ class ApiFeatures {
   }
   filter() {
     const queryObj = { ...this.queryString };
+        // Express 5 sends "price[gte]" as a flat key, so turn it into { price: { gte: ... } }
+    Object.keys(queryObj).forEach((key) => {
+      const match = key.match(/^(\w+)\[(gte|gt|lte|lt)\]$/);
+      if (match) {
+        queryObj[match[1]] = { ...queryObj[match[1]], [match[2]]: queryObj[key] };
+        delete queryObj[key];
+      }
+    });
     const excludedFields = ['page', 'sort', 'limit', 'fields'];
     excludedFields.forEach((el) => delete queryObj[el]);
 
@@ -36,7 +44,7 @@ class ApiFeatures {
   }
   pagination() {
     const page = this.queryString.page * 1 || 1;
-    const limit = this.queryString.limit * 1 || 100;
+    const limit = Math.min(this.queryString.limit * 1 || 20, 100);
     const skip = (page - 1) * limit;
     // skip skips a number of results before returning
     // so for page 2, the formula says 2-1, which is 1 times the limit which is 10, so results for page 2 will skip the first 10 results and show results 11 to 20
