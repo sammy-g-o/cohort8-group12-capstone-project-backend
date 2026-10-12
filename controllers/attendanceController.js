@@ -3,6 +3,7 @@ import Attendance from "../models/attendanceModel.js";
 import Task from "../models/taskModel.js";
 import Project from "../models/projectsModel.js";
 import AppError from "../utils/appError.js";
+import { createNotification } from "../utils/notify.js";
 
 // POST /attendance/checkIn
 export const checkIn = async (req, res, next) => {
@@ -24,13 +25,8 @@ export const checkIn = async (req, res, next) => {
       return next(new AppError("Task not found", 404));
     }
 
-    if (
-      !task.assignedTo ||
-      task.assignedTo.toString() !== volunteerId
-    ) {
-      return next(
-        new AppError("You are not assigned to this task", 403),
-      );
+    if (!task.assignedTo || task.assignedTo.toString() !== volunteerId) {
+      return next(new AppError("You are not assigned to this task", 403));
     }
 
     const existingAttendance = await Attendance.findOne({
@@ -41,10 +37,7 @@ export const checkIn = async (req, res, next) => {
 
     if (existingAttendance) {
       return next(
-        new AppError(
-          "You already have an open check-in for this task",
-          409,
-        ),
+        new AppError("You already have an open check-in for this task", 409),
       );
     }
 
@@ -87,15 +80,11 @@ export const checkOut = async (req, res, next) => {
     }
 
     if (attendance.volunteerId.toString() !== req.user.id) {
-      return next(
-        new AppError("You can only check out your own record", 403),
-      );
+      return next(new AppError("You can only check out your own record", 403));
     }
 
     if (attendance.checkOutTime) {
-      return next(
-        new AppError("Attendance has already been checked out", 400),
-      );
+      return next(new AppError("Attendance has already been checked out", 400));
     }
 
     attendance.checkOutTime = new Date();
@@ -155,14 +144,11 @@ export const getMyAttendance = async (req, res, next) => {
         filter.checkInTime.$lte &&
         filter.checkInTime.$gte > filter.checkInTime.$lte
       ) {
-        return next(
-          new AppError("'from' cannot be later than 'to'", 400),
-        );
+        return next(new AppError("'from' cannot be later than 'to'", 400));
       }
     }
 
-    const attendances = await Attendance.find(filter)
-      .sort({ checkInTime: -1 });
+    const attendances = await Attendance.find(filter).sort({ checkInTime: -1 });
 
     return res.status(200).json({
       status: "success",
@@ -193,8 +179,7 @@ export const getTaskAttendance = async (req, res, next) => {
 
     if (
       !project ||
-      project.organizationId.toString() !==
-        String(req.user.organizationId)
+      project.organizationId.toString() !== String(req.user.organizationId)
     ) {
       return next(new AppError("Task not found", 404));
     }
@@ -237,7 +222,11 @@ export const verifyAttendance = async (req, res, next) => {
     attendance.verifiedAt = new Date();
 
     await attendance.save();
-
+    await createNotification(
+      attendance.volunteerId,
+      "Your attendance has been verified",
+      { type: "attendance_verified", link: "/attendance/me" },
+    );
     return res.status(200).json({
       status: "success",
       data: { attendance },

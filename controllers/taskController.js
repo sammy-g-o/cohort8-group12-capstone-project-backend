@@ -1,7 +1,7 @@
-
 import Task from "../models/taskModel.js";
 import Project from "../models/projectsModel.js";
 import AppError from "../utils/appError.js";
+import ApiFeatures from "../utils/ApiFeatures.js";
 
 // Confirm that the project belongs to the user's organization
 const getOrganizationProject = async (req, next) => {
@@ -12,8 +12,8 @@ const getOrganizationProject = async (req, next) => {
     return next(
       new AppError(
         "You must belong to an organization to perform this action",
-        403
-      )
+        403,
+      ),
     );
   }
 
@@ -23,9 +23,7 @@ const getOrganizationProject = async (req, next) => {
   });
 
   if (!project) {
-    return next(
-      new AppError("Project not found in your organization", 404)
-    );
+    return next(new AppError("Project not found in your organization", 404));
   }
 
   return project;
@@ -61,9 +59,14 @@ export const getAllTasks = async (req, res, next) => {
     const project = await getOrganizationProject(req, next);
     if (!project) return;
 
-    const tasks = await Task.find({
-      projectId: project._id,
-    }).populate("projectId", "name");
+    const features = new ApiFeatures(Task.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .pagination();
+    const tasks = await features.query
+      .find({ projectId: project._id }) // scope last
+      .populate("projectId", "name");
 
     res.status(200).json({
       status: "success",
@@ -107,12 +110,7 @@ export const updateTask = async (req, res, next) => {
 
     // Do not allow this endpoint to change task status,
     // project ownership, or task assignment.
-    const {
-      projectId,
-      assignedTo,
-      status,
-      ...updates
-    } = req.body;
+    const { projectId, assignedTo, status, ...updates } = req.body;
 
     const task = await Task.findOneAndUpdate(
       {
@@ -123,7 +121,7 @@ export const updateTask = async (req, res, next) => {
       {
         new: true,
         runValidators: true,
-      }
+      },
     );
 
     if (!task) {
@@ -169,11 +167,7 @@ export const updateTaskStatus = async (req, res, next) => {
 
     const { status } = req.body;
 
-    const allowedStatuses = [
-      "not started",
-      "in progress",
-      "completed",
-    ];
+    const allowedStatuses = ["not started", "in progress", "completed"];
 
     if (!allowedStatuses.includes(status)) {
       return next(new AppError("Invalid task status", 400));
@@ -188,10 +182,7 @@ export const updateTaskStatus = async (req, res, next) => {
       filter.assignedTo = req.user.id;
     } else if (req.user.role !== "coordinator") {
       return next(
-        new AppError(
-          "You are not authorized to update task status",
-          403
-        )
+        new AppError("You are not authorized to update task status", 403),
       );
     }
 
@@ -201,15 +192,12 @@ export const updateTaskStatus = async (req, res, next) => {
       {
         new: true,
         runValidators: true,
-      }
+      },
     );
 
     if (!task) {
       return next(
-        new AppError(
-          "Task not found or you are not assigned to it",
-          404
-        )
+        new AppError("Task not found or you are not assigned to it", 404),
       );
     }
 

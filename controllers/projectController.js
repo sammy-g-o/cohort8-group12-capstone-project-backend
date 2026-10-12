@@ -1,5 +1,5 @@
-
 import projectsModel from "../models/projectsModel.js";
+import ApiFeatures from "../utils/ApiFeatures.js";
 import AppError from "../utils/appError.js";
 
 // Create a project
@@ -7,7 +7,10 @@ export const createProject = async (req, res, next) => {
   try {
     if (!req.user.organizationId) {
       return next(
-        new AppError("You must belong to an organization to create a project", 403),
+        new AppError(
+          "You must belong to an organization to create a project",
+          403,
+        ),
       );
     }
 
@@ -41,7 +44,12 @@ export const getProjects = async (req, res, next) => {
         ? {}
         : { organizationId: req.user.organizationId };
 
-    const projects = await projectsModel.find(filter);
+    const features = new ApiFeatures(projectsModel.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .pagination();
+    const projects = await features.query.find(filter); // scope last
 
     res.status(200).json({
       status: "success",

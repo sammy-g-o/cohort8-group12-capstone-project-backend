@@ -1,7 +1,7 @@
-
 import mongoose from "mongoose";
 import Organization from "../models/organizationModel.js";
 import User from "../models/userModel.js";
+import ApiFeatures from "../utils/ApiFeatures.js";
 
 const createError = (statusCode, message) => {
   const error = new Error(message);
@@ -26,7 +26,10 @@ export const register = async (req, res, next) => {
 
     if (user.organizationId) {
       return next(
-        createError(409, "You already belong to an organization. Please log in again if your membership has changed."),
+        createError(
+          409,
+          "You already belong to an organization. Please log in again if your membership has changed.",
+        ),
       );
     }
 
@@ -47,12 +50,15 @@ export const register = async (req, res, next) => {
 
     res.status(201).json({
       status: "success",
-      message: "Organization registered successfully. Please log in again to refresh your token.",
+      message:
+        "Organization registered successfully. Please log in again to refresh your token.",
       data: { organization },
     });
   } catch (error) {
     if (error.code === 11000) {
-      return next(createError(409, "Organization name or contact email already exists"));
+      return next(
+        createError(409, "Organization name or contact email already exists"),
+      );
     }
     next(error);
   }
@@ -71,7 +77,12 @@ export const getAllOrganizations = async (req, res, next) => {
       filter.status = "verified";
     }
 
-    const organizations = await Organization.find(filter);
+    const features = new ApiFeatures(Organization.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .pagination();
+    const organizations = await features.query.find(filter); // scope last
 
     res.status(200).json({
       status: "success",
@@ -241,9 +252,7 @@ export const deleteOrganizationCoordinator = async (req, res, next) => {
       return next(createError(400, "You do not belong to an organization"));
     }
 
-    const organization = await Organization.findById(
-      req.user.organizationId,
-    );
+    const organization = await Organization.findById(req.user.organizationId);
 
     if (!organization) {
       return next(createError(404, "Organization not found"));
@@ -256,9 +265,7 @@ export const deleteOrganizationCoordinator = async (req, res, next) => {
     }
 
     if (organization.owner.toString() === req.params.userId) {
-      return next(
-        createError(400, "The organization owner cannot be removed"),
-      );
+      return next(createError(400, "The organization owner cannot be removed"));
     }
 
     const coordinator = await User.findOne({
@@ -268,7 +275,9 @@ export const deleteOrganizationCoordinator = async (req, res, next) => {
     });
 
     if (!coordinator) {
-      return next(createError(404, "Coordinator not found in your organization"));
+      return next(
+        createError(404, "Coordinator not found in your organization"),
+      );
     }
 
     coordinator.role = "volunteer";
