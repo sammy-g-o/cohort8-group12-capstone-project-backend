@@ -9,7 +9,7 @@ import { createNotification } from "../utils/notify.js";
 // Confirm that the project belongs to the user's organization
 const getOrganizationProject = async (req, next) => {
   const { projectId } = req.params;
-    // Volunteers do not belong to an organization. They reach a project only through
+  // Volunteers do not belong to an organization. They reach a project only through
   // tasks assigned to them, so the callers must also filter tasks by assignedTo.
   if (req.user?.role === "volunteer") {
     const project = await Project.findById(projectId);
@@ -48,6 +48,15 @@ export const createTask = async (req, res, next) => {
 
     // Use the project ID from the URL, not the request body
     const { projectId, ...taskData } = req.body;
+    if (taskData.assignedTo) {
+      const volunteer = await User.findOne({
+        _id: taskData.assignedTo,
+        role: "volunteer",
+      });
+      if (!volunteer) {
+        return next(new AppError("assignedTo must be a valid volunteer", 400));
+      }
+    }
 
     const task = await Task.create({
       ...taskData,
@@ -95,7 +104,7 @@ export const getTask = async (req, res, next) => {
     const project = await getOrganizationProject(req, next);
     if (!project) return;
 
-        const filter = { _id: req.params.id, projectId: project._id };
+    const filter = { _id: req.params.id, projectId: project._id };
     if (req.user.role === "volunteer") filter.assignedTo = req.user.id;
 
     const task = await Task.findOne(filter);
@@ -234,7 +243,10 @@ export const assignTask = async (req, res, next) => {
       return next(new AppError("A valid volunteerId is required", 400));
     }
 
-    const volunteer = await User.findOne({ _id: volunteerId, role: "volunteer" });
+    const volunteer = await User.findOne({
+      _id: volunteerId,
+      role: "volunteer",
+    });
 
     if (!volunteer) {
       return next(new AppError("Volunteer not found", 404));
@@ -253,7 +265,10 @@ export const assignTask = async (req, res, next) => {
     await createNotification(
       volunteer._id,
       `You have been assigned a task: ${task.title}`,
-      { type: "task_assigned", link: `/projects/${project._id}/tasks/${task._id}` },
+      {
+        type: "task_assigned",
+        link: `/projects/${project._id}/tasks/${task._id}`,
+      },
     );
 
     res.status(200).json({

@@ -7,27 +7,9 @@ import Task from "../models/taskModel.js";
 
 export const getMyVolunteerProfile = async (req, res, next) => {
   try {
-        // only pass through the filters coordinators need to discover volunteers
-    // (stops clients filtering on or selecting hidden fields like emergencyContact)
-    const { skills, interests, location, availability, page, limit } = req.query;
-
-    const features = new ApiFeatures(VolunteerProfile.find(), {
-      skills,
-      interests,
-      location,
-      availability,
-      page,
-      limit,
-    })
-      .filter()
-      .sort()
-      .limitFields()
-      .pagination();
-
-    const volunteers = await features.query.populate(
-      "userId",
-      "name email phoneNumber",
-    );
+    const myProfile = await VolunteerProfile.findOne({
+      userId: req.user.id,
+    }).populate("userId", "name email phoneNumber");
 
     if (!myProfile) {
       return next(
@@ -44,9 +26,13 @@ export const getMyVolunteerProfile = async (req, res, next) => {
 };
 export const updateMyVolunteerProfile = async (req, res, next) => {
   try {
-    const myProfile = await VolunteerProfile.findOneAndUpdate({
-      userId: req.user.id,
-    });
+    const { userId, ...updates } = req.body; // never let the client change the owner
+
+    const myProfile = await VolunteerProfile.findOneAndUpdate(
+      { userId: req.user.id },
+      updates,
+      { returnDocument: "after", runValidators: true },
+    );
 
     if (!myProfile) {
       return next(
@@ -132,7 +118,24 @@ export const getVolunteerProfile = async (req, res, next) => {
 
 export const getAllVolunteerProfiles = async (req, res, next) => {
   try {
-    const volunteers = await VolunteerProfile.find().populate(
+    // only pass through the filters coordinators need to discover volunteers
+    // (stops clients filtering on or selecting hidden fields like emergencyContact)
+    const { skills, interests, location, availability, page, limit } = req.query;
+
+    const features = new ApiFeatures(VolunteerProfile.find(), {
+      skills,
+      interests,
+      location,
+      availability,
+      page,
+      limit,
+    })
+      .filter()
+      .sort()
+      .limitFields()
+      .pagination();
+
+    const volunteers = await features.query.populate(
       "userId",
       "name email phoneNumber",
     );
@@ -149,9 +152,14 @@ export const getAllVolunteerProfiles = async (req, res, next) => {
 
 export const updateVolunteerProfile = async (req, res, next) => {
   try {
-    const updatedProfile = await VolunteerProfile.findByIdAndUpdate(
-      req.params.id,
-      req.body,
+    const { userId, ...updates } = req.body;
+
+    const updatedProfile = await VolunteerProfile.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        ...(req.user.role !== "admin" && { userId: req.user.id }),
+      },
+      updates,
       { returnDocument: "after", runValidators: true },
     );
 
@@ -171,13 +179,14 @@ export const updateVolunteerProfile = async (req, res, next) => {
 
 export const deleteVolunteerProfile = async (req, res, next) => {
   try {
-    const deletedVolunteerProfile = await VolunteerProfile.findByIdAndDelete(
-      req.params.id,
-    );
+    const deletedVolunteerProfile = await VolunteerProfile.findOneAndDelete({
+      _id: req.params.id,
+      ...(req.user.role !== "admin" && { userId: req.user.id }),
+    });
     if (!deletedVolunteerProfile) {
       return next(new AppError("Profile not found", 404));
     }
-    res.status(204).send("success");
+    res.status(204).send();
   } catch (error) {
     next(error);
   }
@@ -188,7 +197,10 @@ export const getOrganizationVolunteers = async (req, res, next) => {
   try {
     if (!req.user.organizationId) {
       return next(
-        new AppError("You must belong to an organization to view its volunteers", 403),
+        new AppError(
+          "You must belong to an organization to view its volunteers",
+          403,
+        ),
       );
     }
 
