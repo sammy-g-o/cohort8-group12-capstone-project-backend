@@ -2,12 +2,7 @@ import mongoose from "mongoose";
 import Organization from "../models/organizationModel.js";
 import User from "../models/userModel.js";
 import ApiFeatures from "../utils/ApiFeatures.js";
-
-const createError = (statusCode, message) => {
-  const error = new Error(message);
-  error.statusCode = statusCode;
-  return error;
-};
+import AppError from "../utils/appError.js";
 
 // Register an organization
 export const register = async (req, res, next) => {
@@ -15,20 +10,20 @@ export const register = async (req, res, next) => {
     const user = await User.findById(req.user.id);
 
     if (!user) {
-      return next(createError(404, "User not found"));
+      return next(AppError("User not found", 404));
     }
 
     if (user.role !== "coordinator") {
       return next(
-        createError(403, "Only coordinators can register an organization"),
+        AppError("Only coordinators can register an organization", 403),
       );
     }
 
     if (user.organizationId) {
       return next(
-        createError(
-          409,
+        AppError(
           "You already belong to an organization. Please log in again if your membership has changed.",
+          409,
         ),
       );
     }
@@ -57,7 +52,7 @@ export const register = async (req, res, next) => {
   } catch (error) {
     if (error.code === 11000) {
       return next(
-        createError(409, "Organization name or contact email already exists"),
+        AppError("Organization name or contact email already exists", 409),
       );
     }
     next(error);
@@ -98,13 +93,13 @@ export const getAllOrganizations = async (req, res, next) => {
 export const getOrganizationById = async (req, res, next) => {
   try {
     if (!mongoose.isValidObjectId(req.params.id)) {
-      return next(createError(404, "Organization not found"));
+      return next(AppError("Organization not found", 404));
     }
 
     const organization = await Organization.findById(req.params.id);
 
     if (!organization) {
-      return next(createError(404, "Organization not found"));
+      return next(AppError("Organization not found", 404));
     }
 
     const isAdmin = req.user.role === "admin";
@@ -113,7 +108,7 @@ export const getOrganizationById = async (req, res, next) => {
       req.user.organizationId?.toString() === organization._id.toString();
 
     if (!isAdmin && !isVerified && !isOwnOrganization) {
-      return next(createError(404, "Organization not found"));
+      return next(AppError("Organization not found", 404));
     }
 
     res.status(200).json({
@@ -135,7 +130,7 @@ export const verifyOrganization = async (req, res, next) => {
     );
 
     if (!organization) {
-      return next(createError(404, "Organization not found"));
+      return next(AppError("Organization not found", 404));
     }
 
     res.status(200).json({
@@ -158,7 +153,7 @@ export const suspendOrganization = async (req, res, next) => {
     );
 
     if (!organization) {
-      return next(createError(404, "Organization not found"));
+      return next(AppError("Organization not found", 404));
     }
 
     res.status(200).json({
@@ -175,7 +170,7 @@ export const suspendOrganization = async (req, res, next) => {
 export const getOrganizationCoordinators = async (req, res, next) => {
   try {
     if (!req.user.organizationId) {
-      return next(createError(400, "You do not belong to an organization"));
+      return next(AppError("You do not belong to an organization", 400));
     }
 
     const coordinators = await User.find({
@@ -199,11 +194,11 @@ export const addOrganizationCoordinators = async (req, res, next) => {
     const { email } = req.body;
 
     if (!email) {
-      return next(createError(400, "Email is required"));
+      return next(AppError("Email is required", 400));
     }
 
     if (!req.user.organizationId) {
-      return next(createError(400, "You do not belong to an organization"));
+      return next(AppError("You do not belong to an organization", 400));
     }
 
     const user = await User.findOne({
@@ -211,16 +206,14 @@ export const addOrganizationCoordinators = async (req, res, next) => {
     });
 
     if (!user) {
-      return next(createError(404, "User not found"));
+      return next(AppError("User not found", 404));
     }
 
     if (
       user.organizationId &&
       user.organizationId.toString() !== req.user.organizationId.toString()
     ) {
-      return next(
-        createError(409, "This user belongs to another organization"),
-      );
+      return next(AppError("This user belongs to another organization", 409));
     }
 
     user.role = "coordinator";
@@ -249,23 +242,23 @@ export const addOrganizationCoordinators = async (req, res, next) => {
 export const deleteOrganizationCoordinator = async (req, res, next) => {
   try {
     if (!req.user.organizationId) {
-      return next(createError(400, "You do not belong to an organization"));
+      return next(AppError("You do not belong to an organization", 400));
     }
 
     const organization = await Organization.findById(req.user.organizationId);
 
     if (!organization) {
-      return next(createError(404, "Organization not found"));
+      return next(AppError("Organization not found", 404));
     }
 
     if (organization.owner.toString() !== req.user.id.toString()) {
       return next(
-        createError(403, "Only the organization owner can remove coordinators"),
+        AppError("Only the organization owner can remove coordinators", 403),
       );
     }
 
     if (organization.owner.toString() === req.params.userId) {
-      return next(createError(400, "The organization owner cannot be removed"));
+      return next(AppError("The organization owner cannot be removed", 400));
     }
 
     const coordinator = await User.findOne({
@@ -275,9 +268,7 @@ export const deleteOrganizationCoordinator = async (req, res, next) => {
     });
 
     if (!coordinator) {
-      return next(
-        createError(404, "Coordinator not found in your organization"),
-      );
+      return next(AppError("Coordinator not found in your organization", 404));
     }
 
     coordinator.role = "volunteer";
