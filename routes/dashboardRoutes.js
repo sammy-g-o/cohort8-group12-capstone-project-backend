@@ -5,3 +5,4 @@ import { getDashboard } from "../controllers/dashboardController.js";
 export const dashboardRouter = express.Router();
 
 dashboardRouter.get("/", authenticate, authorize("coordinator"), getDashboard);
+dashboardRouter.get("/coordinator", authenticate, authorize("coordinator"), getDashboard);
