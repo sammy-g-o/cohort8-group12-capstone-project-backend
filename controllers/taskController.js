@@ -284,14 +284,14 @@ export const assignTask = async (req, res, next) => {
 // GET /users/me/tasks — tasks assigned to the logged-in volunteer
 export const getMyTasks = async (req, res, next) => {
   try {
-    const { status, page, limit } = req.query;
+    const { status, projectId, page, limit } = req.query;
 
-    const features = new ApiFeatures(Task.find(), { status, page, limit })
-      .filter()
-      .sort()
-      .limitFields()
-      .pagination();
-
+    const features = new ApiFeatures(Task.find(), {
+      status,
+      projectId,
+      page,
+      limit,
+    })
     const tasks = await features.query
       .find({ assignedTo: req.user.id }) // scope last
       .populate("projectId", "name status startDate endDate");

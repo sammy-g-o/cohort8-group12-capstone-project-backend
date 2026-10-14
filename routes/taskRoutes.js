@@ -4,6 +4,7 @@ import {
   createTask,
   deleteTask,
   getAllTasks,
+  getMyTasks,
   getTask,
   updateTask,
   updateTaskStatus,
@@ -45,3 +46,6 @@ taskRouter.patch(
   requireVerifiedOrg,
   assignTask,
 );
+// GET /tasks/me — a volunteer's own tasks across projects
+export const myTaskRouter = express.Router();
+myTaskRouter.get("/me", authenticate, authorize("volunteer"), getMyTasks);
