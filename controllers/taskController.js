@@ -46,11 +46,12 @@ export const createTask = async (req, res, next) => {
     const project = await getOrganizationProject(req, next);
     if (!project) return;
 
-    // Use the project ID from the URL, not the request body
-    const { projectId, ...taskData } = req.body;
-    if (taskData.assignedTo) {
+        // Only these fields are accepted; the project comes from the URL
+    const { title, description, dueDate, priority, assignedTo } = req.body;
+
+    if (assignedTo) {
       const volunteer = await User.findOne({
-        _id: taskData.assignedTo,
+        _id: assignedTo,
         role: "volunteer",
       });
       if (!volunteer) {
@@ -59,10 +60,15 @@ export const createTask = async (req, res, next) => {
     }
 
     const task = await Task.create({
-      ...taskData,
+      title,
+      description,
+      dueDate,
+      priority,
+      assignedTo: assignedTo || null,
       projectId: project._id,
+      organizationId: project.organizationId,
+      createdBy: req.user.id,
     });
-
     res.status(201).json({
       status: "success",
       message: "Task created successfully",
@@ -90,7 +96,7 @@ export const getAllTasks = async (req, res, next) => {
 
     res.status(200).json({
       status: "success",
-      result: tasks.length,
+      results: tasks.length,
       data: { tasks },
     });
   } catch (error) {
@@ -130,7 +136,10 @@ export const updateTask = async (req, res, next) => {
 
     // Do not allow this endpoint to change task status,
     // project ownership, or task assignment.
-    const { projectId, assignedTo, status, ...updates } = req.body;
+    const updates = {};
+    for (const field of ["title", "description", "dueDate", "priority"]) {
+      if (req.body[field] !== undefined) updates[field] = req.body[field];
+    }
 
     const task = await Task.findOneAndUpdate(
       {
@@ -292,6 +301,11 @@ export const getMyTasks = async (req, res, next) => {
       page,
       limit,
     })
+      .filter()
+      .sort()
+      .limitFields()
+      .pagination();
+
     const tasks = await features.query
       .find({ assignedTo: req.user.id }) // scope last
       .populate("projectId", "name status startDate endDate");

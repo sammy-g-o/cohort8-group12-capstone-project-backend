@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 
 const taskSchema = new mongoose.Schema(
@@ -30,8 +29,24 @@ const taskSchema = new mongoose.Schema(
       },
       default: "not started",
     },
+    dueDate: Date,
+    priority: {
+      type: String,
+      enum: {
+        values: ["low", "medium", "high"],
+        message: "Task priority must be low, medium or high",
+      },
+      default: "medium",
+    },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    // copied from the project at creation so reports/dashboards can filter without joins
+    organizationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Organization",
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
-
+taskSchema.index({ projectId: 1, status: 1 });
+taskSchema.index({ assignedTo: 1, status: 1 });
 export default mongoose.model("Task", taskSchema);
