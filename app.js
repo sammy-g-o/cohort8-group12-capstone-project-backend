@@ -14,6 +14,7 @@ import { dashboardRouter } from "./routes/dashboardRoutes.js";
 import { userRouter } from "./routes/userRoutes.js";
 import { alertRouter } from "./routes/alertRoutes.js";
 import { reportRouter } from "./routes/reportRoutes.js";
+import { myTaskRouter } from "./routes/taskRoutes.js";
 
 export const app = express();
 
@@ -23,6 +24,7 @@ app.use(morgan("dev"));
 
 app.use("/auth", authRouter);
 app.use("/users", userRouter);
+app.use("/tasks", myTaskRouter);
 app.use("/alerts", alertRouter);
 app.use("/reports", reportRouter);
 app.use("/projects", projectRoute);

@@ -19,3 +19,15 @@ reportRouter.get(
   authorize("coordinator"),
   getProjectReport,
 );
+reportRouter.get(
+  "/volunteer-hours",
+  authenticate,
+  authorize("coordinator"),
+  getHoursReport,
+);
+reportRouter.get(
+  "/projects/:projectId/summary",
+  authenticate,
+  authorize("coordinator"),
+  getProjectReport,
+);
