@@ -1,6 +1,7 @@
 const allowedOrigins = [
   process.env.CLIENT_URL,
   "https://fin-ngo-project.vercel.app/",
+  "https://fin-ngo.vercel.app/",
   'http://localhost:3000',
   'http://localhost:5500',
   'http://localhost:5173',
